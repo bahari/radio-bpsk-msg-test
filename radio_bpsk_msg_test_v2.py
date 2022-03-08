@@ -260,8 +260,6 @@ class bpsk_msg_rx(gr.hier_block2):
         global limeSdrChan        
         global lnaType
                            
-        #gr.top_block.__init__(self, "BPSK RX Block")
-
         gr.hier_block2.__init__(self, "bpsk_msg_rx",
                                 gr.io_signature(0, 0, 0), # Null signature
                                 gr.io_signature(0, 0, 0))
@@ -301,16 +299,6 @@ class bpsk_msg_rx(gr.hier_block2):
                 fractional_bw=None,
         )
         
-##        #self.limesdr_source_0 = limesdr.source('1D4C42EEABAC8D', 0, '')
-##        self.limesdr_source_0 = limesdr.source(sdrSerNumber, 0, '')
-##        #self.limesdr_source_0.set_sample_rate(samp_rate)
-##        self.limesdr_source_0.set_sample_rate(rx_block_sampl_freq)
-##        #self.limesdr_source_0.set_center_freq(429.96e6, 0)
-##        self.limesdr_source_0.set_center_freq(rx_block_cent_freq, 0)
-##        self.limesdr_source_0.set_bandwidth(5e6,0)
-##        self.limesdr_source_0.set_gain(60,0)
-##        self.limesdr_source_0.set_antenna(255,0)
-##        self.limesdr_source_0.calibrate(5e6, 0)
 
         self.limesdr_source_0 = None
 
@@ -395,7 +383,6 @@ class bpsk_msg_rx(gr.hier_block2):
         self.digital_cma_equalizer_cc_0 = digital.cma_equalizer_cc(11, 1, .01, 1)
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
         self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.byte_t, 'len_key2')
-        #self.blocks_socket_pdu_1 = blocks.socket_pdu("TCP_SERVER", '127.0.0.1', '52002', 10000, False)
         self.blocks_socket_pdu_1 = blocks.socket_pdu("TCP_SERVER", '127.0.0.1', radioRxPortNo, 10000, False)
         self.blocks_repack_bits_bb_0_0_0 = blocks.repack_bits_bb(1, 8, 'len_key2', False, gr.GR_MSB_FIRST)
         self.blocks_multiply_xx_1 = blocks.multiply_vcc(1)
@@ -403,17 +390,11 @@ class bpsk_msg_rx(gr.hier_block2):
         self.analog_pwr_squelch_xx_0 = analog.pwr_squelch_cc(-20, .01, 0, True)
         self.analog_feedforward_agc_cc_0 = analog.feedforward_agc_cc(1024/2, 1.0)
 
-        # Additional message debug block
-        #self.blocks_message_debug_0 = blocks.message_debug()
-
         ##################################################
         # Connections
         ##################################################
         self.msg_connect((self.blocks_tagged_stream_to_pdu_0, 'pdus'), (self.digital_crc32_async_bb_0, 'in'))    
         self.msg_connect((self.digital_crc32_async_bb_0, 'out'), (self.blocks_socket_pdu_1, 'pdus'))
-
-        #self.msg_connect((self.digital_crc32_async_bb_0, 'out'), (self.blocks_message_debug_0, 'print'))
-                
         self.connect((self.analog_feedforward_agc_cc_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))    
         self.connect((self.analog_pwr_squelch_xx_0, 0), (self.digital_fll_band_edge_cc_0, 0))    
         self.connect((self.analog_sig_source_x_1, 0), (self.blocks_multiply_xx_1, 1))    
@@ -517,7 +498,6 @@ class bpsk_msg_rx(gr.hier_block2):
         self.digital_pfb_clock_sync_xxx_0.update_taps((self.RRC_filter_taps))
 
 # For testing purposes, not been used
-# 
 class msg_block_convert (gr.basic_block):
     # other base classes are basic_block, decim_block, interp_block """Convert strings to uint8 vectors""" 
     def __init__(self): 
@@ -600,8 +580,6 @@ class bpsk_msg_tx(gr.hier_block2):
         global limeSdrChan        
         global paType
                 
-        #gr.top_block.__init__(self, "BPSK TX Block")
-
         gr.hier_block2.__init__(self, "bpsk_msg_tx",
                                 gr.io_signature(0, 0, 0), # Null signature
                                 gr.io_signature(0, 0, 0))
@@ -642,17 +620,7 @@ class bpsk_msg_tx(gr.hier_block2):
         self.epy_block_0 = myBPSKtxdetector()
         #self.epy_block_1 = msg_block_convert()
         
-##        #self.limesdr_sink_0_0 = limesdr.sink('0009072C00D6331F', 0, '', '')
-##        self.limesdr_sink_0_0 = limesdr.sink(sdrSerNumber, 0, '', '')
-##        #self.limesdr_sink_0_0.set_sample_rate(samp_rate)
-##        self.limesdr_sink_0_0.set_sample_rate(tx_block_sampl_freq)
-##        #self.limesdr_sink_0_0.set_center_freq(429.96e6, 0)
-##        self.limesdr_sink_0_0.set_center_freq(tx_block_cent_freq, 0)
-##        self.limesdr_sink_0_0.set_bandwidth(5e6,0)
-##        self.limesdr_sink_0_0.set_gain(60,0)
-##        self.limesdr_sink_0_0.set_antenna(255,0)
-##        self.limesdr_sink_0_0.calibrate(5e6, 0)
-
+        # Variable initialization for limesdr
         self.limesdr_sink_0_0 = None
         
         # Selection of the limesdr board
@@ -726,7 +694,6 @@ class bpsk_msg_tx(gr.hier_block2):
         (self.digital_burst_shaper_xx_0).set_block_alias("burst_shaper0")
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, 'len_key', 0)
         self.blocks_tagged_stream_multiply_length_0 = blocks.tagged_stream_multiply_length(gr.sizeof_gr_complex*1, 'len_key', sps_TX)
-        #self.blocks_socket_pdu_0 = blocks.socket_pdu("TCP_SERVER", '127.0.0.1', '52001', 10000, False)
         self.blocks_socket_pdu_0 = blocks.socket_pdu("TCP_SERVER", '127.0.0.1', radioTxPortNo, 10000, False)
         self.blocks_repack_bits_bb_0_0 = blocks.repack_bits_bb(8, my_const.bits_per_symbol(), 'len_key', False, gr.GR_MSB_FIRST)
         self.blocks_pdu_to_tagged_stream_1 = blocks.pdu_to_tagged_stream(blocks.byte_t, 'len_key')
@@ -737,21 +704,12 @@ class bpsk_msg_tx(gr.hier_block2):
         ##################################################
         # Connections
         ##################################################
-        ##
-        #self.msg_connect((self.blocks_socket_pdu_0, 'pdus'), (self.epy_block_1, 'msg_in'))
-        #self.msg_connect((self.epy_block_1, 'msg_out'), (self.digital_crc32_async_bb_1, 'in'))
-        ##
-        
         self.msg_connect((self.blocks_socket_pdu_0, 'pdus'), (self.digital_crc32_async_bb_1, 'in'))    
         self.msg_connect((self.digital_crc32_async_bb_1, 'out'), (self.blocks_pdu_to_tagged_stream_1, 'pdus'))    
         self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 1))    
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_multiply_xx_0, 0))    
-
         self.connect((self.blocks_multiply_xx_0, 0), (self.limesdr_sink_0_0, 0))
-
-        # Additional connections
         self.connect((self.blocks_multiply_xx_0, 0), (self.epy_block_0, 0))
-                        
         self.connect((self.blocks_pdu_to_tagged_stream_1, 0), (self.blocks_tagged_stream_mux_0, 1))    
         self.connect((self.blocks_pdu_to_tagged_stream_1, 0), (self.digital_protocol_formatter_bb_0, 0))    
         self.connect((self.blocks_repack_bits_bb_0_0, 0), (self.digital_diff_encoder_bb_0, 0))    
